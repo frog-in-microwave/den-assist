@@ -23,7 +23,7 @@ export async function createPatientAction(input: NewPatientInput): Promise<{ ok:
   return { ok: true, id: patient.id };
 }
 
-export type NewTreatmentInput = { patientId: number; type: string; diagnosis: string; notes?: string; date: string; totalPayment: number; totalPayed: number };
+export type NewTreatmentInput = { patientId: number; type: string; diagnosis: string; notes?: string; date: string; totalPayment: number; totalPayed: number; isActive?: boolean };
 
 export async function createTreatmentAction(input: NewTreatmentInput): Promise<ActionResult> {
   if (!Number.isInteger(input.patientId) || input.patientId < 1) return { ok: false, error: "Patient not found." };
@@ -42,6 +42,7 @@ export async function createTreatmentAction(input: NewTreatmentInput): Promise<A
       date: new Date(`${input.date}T00:00:00.000Z`),
       totalPayment: input.totalPayment,
       totalPayed: input.totalPayed,
+      isActive: input.isActive ?? true,
     },
   });
   revalidatePath("/");
@@ -51,7 +52,7 @@ export async function createTreatmentAction(input: NewTreatmentInput): Promise<A
   return { ok: true };
 }
 
-export type UpdateTreatmentInput = Omit<NewTreatmentInput, "patientId" | "totalPayed"> & { id: number };
+export type UpdateTreatmentInput = Omit<NewTreatmentInput, "patientId" | "totalPayed"> & { id: number; isActive?: boolean };
 
 export async function updateTreatmentAction(input: UpdateTreatmentInput): Promise<ActionResult> {
   if (!Number.isInteger(input.id) || input.id < 1) return { ok: false, error: "Treatment not found." };
@@ -61,8 +62,31 @@ export async function updateTreatmentAction(input: UpdateTreatmentInput): Promis
   const existing = await prisma.treatment.findUnique({ where: { id: input.id }, select: { patientId: true, totalPayed: true } });
   if (!existing) return { ok: false, error: "Treatment not found." };
   if (input.totalPayment < existing.totalPayed) return { ok: false, error: "The total amount cannot be lower than the amount already paid." };
-  await prisma.treatment.update({ where: { id: input.id }, data: { type: input.type.trim(), diagnosis: input.diagnosis.trim(), notes: input.notes?.trim() || "", date: new Date(`${input.date}T00:00:00.000Z`), totalPayment: input.totalPayment } });
+  
+  await prisma.treatment.update({
+    where: { id: input.id },
+    data: {
+      type: input.type.trim(),
+      diagnosis: input.diagnosis.trim(),
+      notes: input.notes?.trim() || "",
+      date: new Date(`${input.date}T00:00:00.000Z`),
+      totalPayment: input.totalPayment,
+      ...(typeof input.isActive === "boolean" ? { isActive: input.isActive } : {}),
+    },
+  });
   revalidateTreatmentPaths(input.id, existing.patientId);
+  return { ok: true };
+}
+
+export async function toggleTreatmentActiveAction(treatmentId: number, isActive: boolean): Promise<ActionResult> {
+  if (!Number.isInteger(treatmentId) || treatmentId < 1) return { ok: false, error: "Treatment not found." };
+  const treatment = await prisma.treatment.findUnique({ where: { id: treatmentId }, select: { patientId: true } });
+  if (!treatment) return { ok: false, error: "Treatment not found." };
+  await prisma.treatment.update({
+    where: { id: treatmentId },
+    data: { isActive },
+  });
+  revalidateTreatmentPaths(treatmentId, treatment.patientId);
   return { ok: true };
 }
 
@@ -87,3 +111,4 @@ function revalidateTreatmentPaths(treatmentId: number, patientId: number) {
   revalidatePath("/treatments");
   revalidatePath(`/treatments/${treatmentId}`);
 }
+

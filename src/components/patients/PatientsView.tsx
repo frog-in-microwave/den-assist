@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import type { PatientWithStats } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
+import { ActiveBadge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AddPatientModal } from "@/components/patients/AddPatientModal";
 import { formatDate, initials } from "@/lib/format";
@@ -82,6 +83,7 @@ export function PatientsView({
               <tr className="border-b border-[var(--color-border)] text-[12px] text-[var(--color-ink-faint)]">
                 <th className="px-5 py-3 font-medium">Patient</th>
                 <th className="px-5 py-3 font-medium">Last treatment</th>
+                <th className="px-5 py-3 font-medium text-right">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -110,10 +112,18 @@ export function PatientsView({
                       {patient.lastTreatmentDate ? formatDate(patient.lastTreatmentDate) : "No treatments yet"}
                     </Link>
                   </td>
+                  <td className="px-5 py-3.5 text-right">
+                    {patient.hasActiveTreatment ? (
+                      <ActiveBadge label="Active" />
+                    ) : (
+                      <span className="text-[12px] text-[var(--color-ink-faint)]">Inactive</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
         )}
       </div>
 

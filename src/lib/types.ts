@@ -1,1 +1,2 @@
-export type { PatientWithStats, TreatmentRecord as Treatment, TreatmentWithPatient } from "@/lib/data";
+export type { PatientWithStats, TreatmentRecord as Treatment, TreatmentWithPatient, ActivePatientSummary } from "@/lib/data";
+

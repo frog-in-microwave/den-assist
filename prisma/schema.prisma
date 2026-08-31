@@ -41,5 +41,8 @@ model Treatment{
   totalPayment Int
   totalPayed Int
 
+  isActive Boolean @default(true)
+
   patient Patient @relation(fields: [patientId], references: [id])
 }
+
