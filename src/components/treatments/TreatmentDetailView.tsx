@@ -48,11 +48,22 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
   async function toggleActive() {
     setSaving(true);
     setError(null);
-    const result = await toggleTreatmentActiveAction(treatment.id, !treatment.isActive);
-    setSaving(false);
-    if (!result.ok) return setError(result.error);
-    router.refresh();
+    try {
+      const nextState = !treatment.isActive;
+      const result = await toggleTreatmentActiveAction(treatment.id, nextState);
+      setSaving(false);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setForm((current) => ({ ...current, isActive: nextState }));
+      router.refresh();
+    } catch (err: any) {
+      setSaving(false);
+      setError(err?.message || "Failed to update treatment status.");
+    }
   }
+
 
   async function addPayment(event: FormEvent) {
     event.preventDefault();
