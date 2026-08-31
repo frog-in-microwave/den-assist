@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import type { ActionResult, NewPatientInput, NewTreatmentInput, UpdateTreatmentInput } from "@/lib/types";
+import type { ActionResult, NewPatientInput, UpdatePatientInput, NewTreatmentInput, UpdateTreatmentInput } from "@/lib/types";
 
 export async function createPatientAction(input: NewPatientInput): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   try {
@@ -23,6 +23,33 @@ export async function createPatientAction(input: NewPatientInput): Promise<{ ok:
     return { ok: false, error: err?.message || "Failed to create patient." };
   }
 }
+
+export async function updatePatientAction(input: UpdatePatientInput): Promise<ActionResult> {
+  try {
+    const id = Number(input.id);
+    if (!Number.isInteger(id) || id < 1) return { ok: false, error: "Patient not found." };
+    if (!input.firstName.trim() || !input.lastName.trim()) return { ok: false, error: "First and last name are required." };
+
+    await prisma.patient.update({
+      where: { id },
+      data: {
+        firstName: input.firstName.trim(),
+        lastName: input.lastName.trim(),
+        birthDate: input.birthDate ? new Date(`${input.birthDate}T00:00:00.000Z`) : null,
+        notes: input.notes?.trim() || null,
+      },
+    });
+
+    try { revalidatePath("/"); } catch {}
+    try { revalidatePath("/patients"); } catch {}
+    try { revalidatePath(`/patients/${id}`); } catch {}
+    return { ok: true };
+  } catch (err: any) {
+    console.error("Error in updatePatientAction:", err);
+    return { ok: false, error: err?.message || "Failed to update patient." };
+  }
+}
+
 
 export async function createTreatmentAction(input: NewTreatmentInput): Promise<ActionResult> {
   try {
