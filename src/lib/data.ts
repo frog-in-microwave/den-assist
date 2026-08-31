@@ -167,20 +167,74 @@ export type ActivePatientSummary = PatientWithStats & {
   activeTreatments: TreatmentRecord[];
 };
 
-export async function getDashboardSummary() {
-  const activePatientsRaw = await prisma.patient.findMany({
-    where: {
-      treatments: {
-        some: { isActive: true },
+export async function getDashboardSummary(query?: string) {
+  const q = query?.trim();
+  let activePatientsRaw;
+
+  if (!q) {
+    activePatientsRaw = await prisma.patient.findMany({
+      where: {
+        treatments: {
+          some: { isActive: true },
+        },
       },
-    },
-    include: {
-      treatments: {
-        orderBy: { date: "desc" },
+      include: {
+        treatments: {
+          orderBy: { date: "desc" },
+        },
       },
-    },
-    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-  });
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    });
+  } else {
+    // Ensure PostgreSQL pg_trgm extension exists on database
+    await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS pg_trgm;`);
+
+    // Database-level fuzzy search for active patients
+    const matchedPatients: Array<{ id: number }> = await prisma.$queryRaw`
+      SELECT p.id
+      FROM "Patient" p
+      JOIN "Treatment" t ON t."patientId" = p.id
+      WHERE t."isActive" = true
+        AND (
+             p."firstName" ILIKE ${'%' + q + '%'}
+          OR p."lastName" ILIKE ${'%' + q + '%'}
+          OR (p."firstName" || ' ' || p."lastName") ILIKE ${'%' + q + '%'}
+          OR similarity(p."firstName" || ' ' || p."lastName", ${q}) > 0.15
+          OR similarity(p."firstName", ${q}) > 0.15
+          OR similarity(p."lastName", ${q}) > 0.15
+        )
+      GROUP BY p.id, p."firstName", p."lastName"
+      ORDER BY 
+        CASE WHEN (p."firstName" || ' ' || p."lastName") ILIKE ${q + '%'} THEN 1 ELSE 2 END,
+        GREATEST(
+          similarity(p."firstName", ${q}),
+          similarity(p."lastName", ${q}),
+          similarity(p."firstName" || ' ' || p."lastName", ${q})
+        ) DESC,
+        p."lastName" ASC,
+        p."firstName" ASC;
+    `;
+
+    const patientIds = matchedPatients.map((p) => p.id);
+
+    if (patientIds.length === 0) {
+      return { activePatients: [] };
+    }
+
+    const fetched = await prisma.patient.findMany({
+      where: { id: { in: patientIds } },
+      include: {
+        treatments: {
+          orderBy: { date: "desc" },
+        },
+      },
+    });
+
+    const patientMap = new Map(fetched.map((p) => [p.id, p]));
+    activePatientsRaw = patientIds
+      .map((id) => patientMap.get(id))
+      .filter((p): p is NonNullable<typeof p> => p !== undefined);
+  }
 
   const activePatients: ActivePatientSummary[] = activePatientsRaw.map((patient) => {
     const stats = toPatientWithStats(patient);
@@ -193,18 +247,9 @@ export async function getDashboardSummary() {
     };
   });
 
-  const [totalPatientsCount, totalActiveTreatmentsCount, totalTreatmentsCount] = await Promise.all([
-    prisma.patient.count(),
-    prisma.treatment.count({ where: { isActive: true } }),
-    prisma.treatment.count(),
-  ]);
-
   return {
     activePatients,
-    totalActivePatients: activePatients.length,
-    totalActiveTreatments: totalActiveTreatmentsCount,
-    totalPatients: totalPatientsCount,
-    totalTreatments: totalTreatmentsCount,
   };
 }
+
 

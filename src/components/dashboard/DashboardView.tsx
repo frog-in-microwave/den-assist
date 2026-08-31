@@ -1,58 +1,74 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import type { ActivePatientSummary, Treatment } from "@/lib/types";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import type { ActivePatientSummary } from "@/lib/types";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { ActiveBadge } from "@/components/ui/Badge";
 import { formatDate, formatCurrency, initials } from "@/lib/format";
 
 export function DashboardView({
   summary,
+  initialQuery = "",
 }: {
   summary: {
     activePatients: ActivePatientSummary[];
-    totalActivePatients: number;
-    totalActiveTreatments: number;
-    totalPatients: number;
-    totalTreatments: number;
   };
+  initialQuery?: string;
 }) {
-  // Default to selecting the first active patient if available
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+  const [query, setQuery] = useState(initialQuery);
+
+  // Maintain selected active patient state
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
     summary.activePatients.length > 0 ? summary.activePatients[0].id : null
   );
 
-  const selectedPatient = summary.activePatients.find((p) => p.id === selectedPatientId) ?? summary.activePatients[0] ?? null;
+  // Sync selected patient if query or summary list changes
+  const selectedPatient =
+    summary.activePatients.find((p) => p.id === selectedPatientId) ??
+    summary.activePatients[0] ??
+    null;
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  const handleSearchChange = (value: string) => {
+    setQuery(value);
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (value.trim()) {
+        params.set("query", value);
+      } else {
+        params.delete("query");
+      }
+      router.replace(`${pathname}?${params.toString()}`);
+    });
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-[26px] text-[var(--color-ink)]">
-          Clinic Overview
+          Active Clinic Cases
         </h1>
         <p className="mt-1 text-[14px] text-[var(--color-ink-faint)]">
-          Active patient cases and ongoing treatments requiring care.
+          Ongoing treatments and active patient care requiring attention.
         </p>
-      </div>
-
-      {/* Metric Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard label="Active Patients" value={String(summary.totalActivePatients)} badge="Live" />
-        <SummaryCard label="Active Treatments" value={String(summary.totalActiveTreatments)} badge="Ongoing" />
-        <SummaryCard label="Total Patients" value={String(summary.totalPatients)} subtext="All time on file" />
-        <SummaryCard label="Total Treatments" value={String(summary.totalTreatments)} subtext="All recorded care" />
       </div>
 
       {/* Main Interactive Active Patients & Treatments Section */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-        
-        {/* Left Column: Active Patients (7 cols) */}
-        <div className="xl:col-span-7">
+        {/* Left Column: Active Patients with Fuzzy Search (7 cols) */}
+        <div className="xl:col-span-7 space-y-4">
           <Card>
             <CardHeader
               title="Active Patients"
-              subtitle="Select a patient row to view their active treatments"
+              subtitle="Select a patient to view their active treatments"
               action={
                 <Link href="/patients" className="text-[13px] text-[var(--color-brand)] font-medium hover:underline">
                   View all patients →
@@ -60,9 +76,28 @@ export function DashboardView({
               }
             />
 
+            {/* Active Patients Fuzzy Search Input */}
+            <div className="px-5 pb-3">
+              <div className="relative">
+                <input
+                  value={query}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Search active patients..."
+                  className="w-full h-10 rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-3 text-[14px] text-[var(--color-ink)] outline-none focus:border-[var(--color-brand)]"
+                />
+                {isPending && (
+                  <div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-brand)] border-t-transparent" />
+                )}
+              </div>
+            </div>
+
             {summary.activePatients.length === 0 ? (
               <div className="p-8 text-center text-[14px] text-[var(--color-ink-faint)]">
-                No patients currently have active treatments.
+                {query ? (
+                  <>No active patients match your search "<strong>{query}</strong>".</>
+                ) : (
+                  "No patients currently have active treatments."
+                )}
               </div>
             ) : (
               <ul className="divide-y divide-[var(--color-border)]">
@@ -126,8 +161,8 @@ export function DashboardView({
           {selectedPatient ? (
             <Card>
               <CardHeader
-                title={`Active Treatments`}
-                subtitle={`Showing ongoing care for ${selectedPatient.firstName} ${selectedPatient.lastName}`}
+                title="Active Treatments"
+                subtitle={`Ongoing care for ${selectedPatient.firstName} ${selectedPatient.lastName}`}
                 action={
                   <Link
                     href={`/patients/${selectedPatient.id}`}
@@ -145,13 +180,14 @@ export function DashboardView({
                   </div>
                 ) : (
                   selectedPatient.activeTreatments.map((treatment) => (
-                    <div
+                    <Link
                       key={treatment.id}
-                      className="rounded-lg border border-[var(--color-border)] p-4 bg-[var(--color-surface)] space-y-3 hover:border-[var(--color-border-strong)] transition-colors"
+                      href={`/treatments/${treatment.id}`}
+                      className="block rounded-lg border border-[var(--color-border)] p-4 bg-[var(--color-surface)] space-y-3 hover:border-[var(--color-brand)] hover:shadow-sm transition-all group"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h4 className="text-[14.5px] font-medium text-[var(--color-ink)]">
+                          <h4 className="text-[14.5px] font-medium text-[var(--color-ink)] group-hover:text-[var(--color-brand)] transition-colors">
                             {treatment.type}
                           </h4>
                           <p className="text-[12.5px] text-[var(--color-ink-muted)] mt-0.5">
@@ -187,48 +223,19 @@ export function DashboardView({
                           )}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))
+
                 )}
               </div>
             </Card>
           ) : (
             <Card className="p-8 text-center text-[14px] text-[var(--color-ink-faint)]">
-              Select an active patient on the left to inspect their treatments.
+              Select an active patient on the left to inspect their active treatments.
             </Card>
           )}
         </div>
-
       </div>
     </div>
-  );
-}
-
-function SummaryCard({
-  label,
-  value,
-  badge,
-  subtext,
-}: {
-  label: string;
-  value: string;
-  badge?: string;
-  subtext?: string;
-}) {
-  return (
-    <Card className="p-5">
-      <div className="flex items-center justify-between">
-        <p className="text-[13px] text-[var(--color-ink-faint)]">{label}</p>
-        {badge && (
-          <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
-            {badge}
-          </span>
-        )}
-      </div>
-      <p className="mt-2 font-[family-name:var(--font-mono)] tabular text-[28px] font-medium text-[var(--color-ink)]">
-        {value}
-      </p>
-      {subtext && <p className="mt-1 text-[11.5px] text-[var(--color-ink-faint)]">{subtext}</p>}
-    </Card>
   );
 }
