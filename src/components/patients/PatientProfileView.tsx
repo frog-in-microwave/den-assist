@@ -1,11 +1,98 @@
 "use client";
+
 import Link from "next/link";
 import { useState } from "react";
 import type { PatientWithStats, Treatment } from "@/lib/types";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ActiveBadge } from "@/components/ui/Badge";
 import { TreatmentTimeline } from "@/components/treatments/TreatmentTimeline";
 import { TreatmentForm } from "@/components/treatments/TreatmentForm";
+import { EditPatientModal } from "@/components/patients/EditPatientModal";
 import { age, formatDate, initials } from "@/lib/format";
-export function PatientProfileView({ patient, treatments }: { patient: PatientWithStats; treatments: Treatment[] }) { const [formOpen, setFormOpen] = useState(false); const birthDate = patient.birthDate ? `${age(patient.birthDate)} yrs · ${formatDate(patient.birthDate)}` : "Birth date not recorded"; return <div className="space-y-6"><Link href="/patients" className="inline-flex text-[13px] text-[var(--color-ink-faint)] hover:text-[var(--color-ink)]">← Patients</Link><div className="flex flex-wrap items-start justify-between gap-4"><div className="flex items-center gap-4"><div className="h-14 w-14 rounded-full bg-[var(--color-brand-soft)] text-[var(--color-brand-ink)] grid place-items-center text-[18px] font-medium">{initials(patient.firstName, patient.lastName)}</div><div><h1 className="font-[family-name:var(--font-display)] text-[24px] text-[var(--color-ink)]">{patient.firstName} {patient.lastName}</h1><p className="mt-1 text-[13.5px] text-[var(--color-ink-faint)]">{birthDate}</p></div></div><Button onClick={() => setFormOpen(true)}>Add treatment</Button></div><div className="grid grid-cols-1 lg:grid-cols-3 gap-5"><Card><CardHeader title="Patient information" /><dl className="px-5 pb-5 space-y-3"><Row label="Date of birth" value={patient.birthDate ? formatDate(patient.birthDate) : "—"} /><Row label="Notes" value={patient.notes || "No notes on file."} /></dl></Card><Card className="lg:col-span-2"><CardHeader title="Treatment history" subtitle={`${treatments.length} recorded`} /><div className="px-5 pb-5"><TreatmentTimeline treatments={treatments} /></div></Card></div><TreatmentForm open={formOpen} onClose={() => setFormOpen(false)} patientId={patient.id} /></div>; }
-function Row({ label, value }: { label: string; value: string }) { return <div><dt className="text-[12px] text-[var(--color-ink-faint)]">{label}</dt><dd className="mt-0.5 whitespace-pre-wrap text-[14px] text-[var(--color-ink)]">{value}</dd></div>; }
+
+export function PatientProfileView({
+  patient,
+  treatments,
+}: {
+  patient: PatientWithStats;
+  treatments: Treatment[];
+}) {
+  const [formOpen, setFormOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+
+  const birthDateText = patient.birthDate
+    ? `${age(patient.birthDate)} yrs · ${formatDate(patient.birthDate)}`
+    : "Birth date not recorded";
+
+  return (
+    <div className="space-y-6">
+      <Link href="/patients" className="inline-flex text-[13px] text-[var(--color-ink-faint)] hover:text-[var(--color-ink)]">
+        ← Patients
+      </Link>
+
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 rounded-full bg-[var(--color-brand-soft)] text-[var(--color-brand-ink)] grid place-items-center text-[18px] font-medium">
+            {initials(patient.firstName, patient.lastName)}
+          </div>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="font-[family-name:var(--font-display)] text-[24px] text-[var(--color-ink)]">
+                {patient.firstName} {patient.lastName}
+              </h1>
+              {patient.hasActiveTreatment && <ActiveBadge label="Active Patient" />}
+            </div>
+            <p className="mt-1 text-[13.5px] text-[var(--color-ink-faint)]">{birthDateText}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={() => setEditOpen(true)}>
+            Edit profile
+          </Button>
+          <Button onClick={() => setFormOpen(true)}>Add treatment</Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <Card>
+          <CardHeader
+            title="Patient information"
+            action={
+              <button
+                onClick={() => setEditOpen(true)}
+                className="text-[12.5px] text-[var(--color-brand)] font-medium hover:underline"
+              >
+                Edit
+              </button>
+            }
+          />
+          <dl className="px-5 pb-5 space-y-3">
+            <Row label="Date of birth" value={patient.birthDate ? formatDate(patient.birthDate) : "—"} />
+            <Row label="Notes" value={patient.notes || "No notes on file."} />
+          </dl>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader title="Treatment history" subtitle={`${treatments.length} recorded`} />
+          <div className="px-5 pb-5">
+            <TreatmentTimeline treatments={treatments} />
+          </div>
+        </Card>
+      </div>
+
+      <TreatmentForm open={formOpen} onClose={() => setFormOpen(false)} patientId={patient.id} />
+      <EditPatientModal open={editOpen} onClose={() => setEditOpen(false)} patient={patient} />
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[12px] text-[var(--color-ink-faint)]">{label}</dt>
+      <dd className="mt-0.5 whitespace-pre-wrap text-[14px] text-[var(--color-ink)]">{value}</dd>
+    </div>
+  );
+}

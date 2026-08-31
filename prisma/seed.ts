@@ -134,9 +134,12 @@ function getRandomTreatmentDate() {
 async function main() {
   console.log("Starting seed process for remote database...");
 
-  // Optional: Clean existing records or append new ones
-  // We'll create 50 brand new patients
+  // Clean existing records
+  await prisma.treatment.deleteMany();
+  await prisma.patient.deleteMany();
+
   const createdPatientsCount = 50;
+
 
   for (let i = 0; i < createdPatientsCount; i++) {
     const firstName = FIRST_NAMES[i % FIRST_NAMES.length];
@@ -157,6 +160,15 @@ async function main() {
     // 1 to 4 treatments per patient
     const treatmentCount = getRandomInt(1, 4);
 
+    // Most patients (~75%) have exactly 1 active treatment; others have 0 or 2
+    const roll = Math.random();
+    let targetActiveCount = 1;
+    if (roll < 0.15) {
+      targetActiveCount = 0;
+    } else if (roll > 0.88 && treatmentCount >= 2) {
+      targetActiveCount = 2;
+    }
+
     for (let t = 0; t < treatmentCount; t++) {
       const template = getRandomElement(TREATMENT_TEMPLATES);
       const totalPayment = getRandomInt(template.minPayment, template.maxPayment);
@@ -166,11 +178,13 @@ async function main() {
       let totalPayed = totalPayment;
 
       if (!isFullyPaid) {
-        // Partial payment (0 to totalPayment - 10)
         const paymentRatios = [0, 0.25, 0.5, 0.75];
         const ratio = getRandomElement(paymentRatios);
         totalPayed = Math.floor(totalPayment * ratio);
       }
+
+      // Mark the first targetActiveCount treatments as active, remaining as completed
+      const isActive = t < targetActiveCount;
 
       await prisma.treatment.create({
         data: {
@@ -181,9 +195,11 @@ async function main() {
           date: getRandomTreatmentDate(),
           totalPayment,
           totalPayed,
+          isActive,
         },
       });
     }
+
   }
 
   console.log(`Successfully seeded ${createdPatientsCount} patients with realistic Lebanese names and treatments!`);

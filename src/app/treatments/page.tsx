@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllTreatments } from "@/lib/data";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ActiveBadge } from "@/components/ui/Badge";
 import { formatDate, initials } from "@/lib/format";
 
 export default async function TreatmentsPage() {
@@ -31,6 +32,7 @@ export default async function TreatmentsPage() {
                   <th className="px-5 py-3 font-medium">Patient</th>
                   <th className="px-5 py-3 font-medium">Treatment</th>
                   <th className="px-5 py-3 font-medium">Date</th>
+                  <th className="px-5 py-3 font-medium text-right">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -53,11 +55,15 @@ export default async function TreatmentsPage() {
                       </Link>
                     </td>
                     <td className="px-5 py-3.5 text-[13.5px] text-[var(--color-ink-muted)]">{formatDate(t.date)}</td>
+                    <td className="px-5 py-3.5 text-right">
+                      <ActiveBadge label="Active" active={t.isActive} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
         )}
       </div>
     </div>

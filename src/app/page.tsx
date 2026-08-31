@@ -1,7 +1,14 @@
-import Link from "next/link";
 import { getDashboardSummary } from "@/lib/data";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { formatDate } from "@/lib/format";
+import { DashboardView } from "@/components/dashboard/DashboardView";
 
-export default async function DashboardPage() { const summary = await getDashboardSummary(); return <div className="space-y-8"><div><h1 className="font-[family-name:var(--font-display)] text-[26px] text-[var(--color-ink)]">Clinic overview</h1><p className="mt-1 text-[14px] text-[var(--color-ink-faint)]">A summary calculated from the patients and treatments in your database.</p></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><Summary label="Patients" value={String(summary.totalPatients)} /><Summary label="Treatments" value={String(summary.totalTreatments)} /></div><div className="grid grid-cols-1 xl:grid-cols-2 gap-5"><Card><CardHeader title="Patients" subtitle="Alphabetical list" action={<Link href="/patients" className="text-[13px] text-[var(--color-brand)]">View all</Link>} /><ul className="px-5 pb-5 space-y-2">{summary.patients.map((patient) => <li key={patient.id}><Link href={`/patients/${patient.id}`} className="block rounded-lg px-2 py-2 hover:bg-[var(--color-surface-sunken)]">{patient.firstName} {patient.lastName}</Link></li>)}</ul></Card><Card><CardHeader title="Recent treatments" subtitle="Ordered by treatment date" action={<Link href="/treatments" className="text-[13px] text-[var(--color-brand)]">View all</Link>} /><ul className="px-5 pb-5 space-y-2">{summary.recentTreatments.map((treatment) => <li key={treatment.id}><Link href={`/patients/${treatment.patientId}`} className="flex justify-between rounded-lg px-2 py-2 hover:bg-[var(--color-surface-sunken)]"><span>{treatment.type} <small className="text-[var(--color-ink-faint)]">· {treatment.patient.firstName} {treatment.patient.lastName}</small></span><span className="text-[13px] text-[var(--color-ink-faint)]">{formatDate(treatment.date)}</span></Link></li>)}</ul></Card></div></div>; }
-function Summary({ label, value }: { label: string; value: string }) { return <Card className="p-5"><p className="text-[13px] text-[var(--color-ink-faint)]">{label}</p><p className="mt-2 font-[family-name:var(--font-mono)] tabular text-[28px] font-medium text-[var(--color-ink)]">{value}</p></Card>; }
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ query?: string }>;
+}) {
+  const { query } = await searchParams;
+  const summary = await getDashboardSummary(query);
+  return <DashboardView summary={summary} initialQuery={query ?? ""} />;
+}
+
+
