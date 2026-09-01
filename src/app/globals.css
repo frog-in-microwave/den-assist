@@ -9,38 +9,54 @@
   used for the logomark and status indicators (see Sidebar + Badge).
 */
 @theme inline {
-  --color-bg: #f5f7f3;
+  --color-bg: #f4f7f6;
   --color-surface: #ffffff;
-  --color-surface-sunken: #eef1ec;
-  --color-border: #e1e6dd;
-  --color-border-strong: #cbd3c6;
+  --color-surface-sunken: #eaeff0;
+  --color-border: #e2e9e8;
+  --color-border-strong: #cbd7d5;
 
-  --color-ink: #16241f;
-  --color-ink-muted: #5b6b63;
-  --color-ink-faint: #8b988f;
+  --color-ink: #0f1e1a;
+  --color-ink-muted: #4a5d57;
+  --color-ink-faint: #7a8e88;
 
-  --color-brand: #0f6b5c;
-  --color-brand-ink: #0a4a40;
-  --color-brand-soft: #e2ede9;
+  --color-brand: #0284c7;
+  --color-brand-ink: #0369a1;
+  --color-brand-soft: #e0f2fe;
+
+  --color-teal: #0d9488;
+  --color-teal-soft: #ccfbf1;
+
+  --color-indigo: #4f46e5;
+  --color-indigo-soft: #e0e7ff;
+
+  --color-amber: #d97706;
+  --color-amber-soft: #fef3c7;
+
+  --color-emerald: #059669;
+  --color-emerald-soft: #d1fae5;
+
+  --color-rose: #e11d48;
+  --color-rose-soft: #ffe4e6;
 
   --color-clay: #c2703f;
   --color-clay-soft: #f5e6da;
 
-  --color-success: #2f7a4f;
-  --color-success-soft: #e3efe6;
+  --color-success: #059669;
+  --color-success-soft: #d1fae5;
 
-  --color-danger: #b3432b;
-  --color-danger-soft: #f6e5e0;
+  --color-danger: #e11d48;
+  --color-danger-soft: #ffe4e6;
 
-  --color-violet: #6c63a6;
-  --color-violet-soft: #eae8f5;
+  --color-violet: #6366f1;
+  --color-violet-soft: #e0e7ff;
 
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
 
-  --shadow-card: 0 1px 2px rgba(22, 36, 31, 0.04), 0 1px 1px rgba(22, 36, 31, 0.03);
-  --shadow-popover: 0 12px 32px rgba(22, 36, 31, 0.12), 0 2px 8px rgba(22, 36, 31, 0.06);
+  --shadow-card: 0 4px 12px -2px rgba(15, 30, 26, 0.05), 0 1px 3px rgba(15, 30, 26, 0.03);
+  --shadow-hover: 0 10px 25px -4px rgba(2, 132, 199, 0.12), 0 4px 10px -2px rgba(15, 30, 26, 0.04);
+  --shadow-popover: 0 20px 40px -12px rgba(15, 30, 26, 0.15), 0 4px 12px -2px rgba(15, 30, 26, 0.08);
 }
 
 html {

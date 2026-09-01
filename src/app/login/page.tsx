@@ -30,7 +30,6 @@ export default function LoginPage() {
         return setError(result.error);
       }
 
-      // Navigate to destination route after successful JWT sign-in
       router.push(fromPath);
       router.refresh();
     } catch (err: any) {
@@ -40,41 +39,41 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[80vh] flex flex-col justify-center items-center px-4 py-12">
-      <div className="w-full max-w-md space-y-8">
+    <div className="relative min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-gradient-to-br from-slate-50 via-sky-50/40 to-teal-50/50 overflow-hidden">
+      
+      {/* Background Glowing Ambient Orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-300/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-300/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-md space-y-8">
         
-        {/* Header Branding */}
+        {/* Header Branding with Tooth Logo */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-[var(--color-brand)] text-white shadow-lg shadow-[var(--color-brand)]/20">
-            <svg width="32" height="32" viewBox="0 0 26 26" fill="none">
-              <path
-                d="M8 13.2 11.3 16.5 18 9"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-tr from-sky-600 via-teal-500 to-emerald-400 text-white shadow-xl shadow-sky-500/25 p-3 transform hover:scale-105 transition-transform">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+              <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" fill="white" fillOpacity="0.25" />
+              <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" />
             </svg>
           </div>
           <div>
-            <h1 className="font-[family-name:var(--font-display)] text-[28px] tracking-tight text-[var(--color-ink)]">
-              Welcome to Den Assist
+            <h1 className="font-[family-name:var(--font-display)] text-[30px] tracking-tight text-slate-900">
+              Den Assist
             </h1>
-            <p className="mt-1 text-[14px] text-[var(--color-ink-faint)]">
-              Enter your credentials to access the dental management platform.
+            <p className="mt-1 text-[14px] text-slate-500">
+              Dental Practice Management & Clinical Operations
             </p>
           </div>
         </div>
 
         {/* Login Form Card */}
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md p-7 sm:p-9 shadow-xl shadow-slate-200/50">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="rounded-lg bg-[var(--color-danger-soft)] border border-[var(--color-danger)]/20 p-3 text-[13.5px] text-[var(--color-danger)] flex items-center gap-2">
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-[13.5px] text-rose-700 flex items-start gap-2.5 shadow-sm">
+                <svg className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
                 </svg>
-                {error}
+                <span>{error}</span>
               </div>
             )}
 
@@ -105,7 +104,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-[12px] font-medium text-[var(--color-ink-faint)] hover:text-[var(--color-ink)]"
+                  className="absolute right-3 top-2.5 text-[12px] font-semibold text-slate-500 hover:text-sky-600 transition-colors px-1 py-0.5 rounded"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -115,15 +114,15 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-11 text-[15px] font-medium mt-2"
+              className="w-full h-11 text-[15px] font-semibold mt-2 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white shadow-lg shadow-sky-600/20"
             >
-              {submitting ? "Signing in..." : "Sign In →"}
+              {submitting ? "Signing in..." : "Sign In to Clinic →"}
             </Button>
           </form>
         </div>
 
         {/* Security Footer Note */}
-        <p className="text-center text-[12px] text-[var(--color-ink-faint)]">
+        <p className="text-center text-[12.5px] text-slate-400">
           Protected with 7-day JWT authentication session
         </p>
 
