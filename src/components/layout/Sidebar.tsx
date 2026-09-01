@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { logoutAction } from "@/lib/actions";
 
 const NAV_ITEMS: { href: string; label: string; icon: ReactNode }[] = [
   {
@@ -50,6 +51,15 @@ function isActive(pathname: string, href: string) {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  if (pathname === "/login") return null;
+
+  async function handleLogout() {
+    await logoutAction();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <>
@@ -91,7 +101,20 @@ export function Sidebar() {
           })}
         </nav>
 
+        {/* Sign Out Action at bottom */}
+        <div className="p-3 border-t border-[var(--color-border)]">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] text-[var(--color-ink-faint)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-soft)] transition-colors"
+          >
+            <svg className="w-5 h-5 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M7.5 17.5H4.167a1.667 1.667 0 01-1.667-1.667V4.167A1.667 1.667 0 014.167 2.5H7.5M13.333 14.167L17.5 10l-4.167-4.167M17.5 10H7.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Sign Out
+          </button>
+        </div>
       </aside>
+
 
       {/* Mobile / tablet: condensed top bar */}
       <header className="lg:hidden sticky top-0 z-30 bg-[var(--color-surface)] border-b border-[var(--color-border)]">

@@ -3,6 +3,64 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import type { ActionResult, NewPatientInput, UpdatePatientInput, NewTreatmentInput, UpdateTreatmentInput } from "@/lib/types";
+import { createAuthToken, setAuthCookie, removeAuthCookie } from "@/lib/auth";
+import { checkRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
+
+export async function loginAction(usernameInput: string, passwordInput: string): Promise<ActionResult> {
+  try {
+    const clientIp = await getClientIp();
+    const rateCheck = checkRateLimit(clientIp, 5, 15 * 60 * 1000);
+
+    if (!rateCheck.allowed) {
+      return {
+        ok: false,
+        error: `Too many failed login attempts from your IP. Please try again in ${rateCheck.retryAfterMinutes} minute(s).`,
+      };
+    }
+
+    const adminUsername = process.env.ADMIN_USERNAME || "admin";
+    const adminPassword = process.env.ADMIN_PASSWORD || "password123";
+
+    const username = usernameInput?.trim();
+    const password = passwordInput?.trim();
+
+    if (!username || !password) {
+      return { ok: false, error: "Username and password are required." };
+    }
+
+    if (username.toLowerCase() !== adminUsername.toLowerCase() || password !== adminPassword) {
+      const remainingMsg =
+        rateCheck.remainingAttempts > 0
+          ? ` (${rateCheck.remainingAttempts} attempt(s) remaining)`
+          : "";
+      return { ok: false, error: `Invalid username or password.${remainingMsg}` };
+    }
+
+    // Reset rate limit store upon successful login
+    resetRateLimit(clientIp);
+
+    const token = await createAuthToken(username);
+    await setAuthCookie(token);
+
+    try { revalidatePath("/"); } catch {}
+    return { ok: true };
+  } catch (err: any) {
+    console.error("Error in loginAction:", err);
+    return { ok: false, error: err?.message || "Failed to log in." };
+  }
+}
+
+
+export async function logoutAction(): Promise<ActionResult> {
+  try {
+    await removeAuthCookie();
+    try { revalidatePath("/"); } catch {}
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || "Failed to log out." };
+  }
+}
+
 
 export async function createPatientAction(input: NewPatientInput): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   try {
