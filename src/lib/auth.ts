@@ -5,7 +5,7 @@ export const AUTH_COOKIE_NAME = "auth_token";
 export const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60; // 604800 seconds
 
 function getSecretKey() {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || "fallback_secret_key_do_not_use_in_prod";
   return new TextEncoder().encode(secret);
 }
 

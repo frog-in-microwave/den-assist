@@ -5,7 +5,7 @@ const AUTH_COOKIE_NAME = "auth_token";
 const PUBLIC_PATHS = ["/login"];
 
 function getSecretKey() {
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || "fallback_secret_key_do_not_use_in_prod";
   return new TextEncoder().encode(secret);
 }
 
