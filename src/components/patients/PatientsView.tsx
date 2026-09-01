@@ -40,33 +40,46 @@ export function PatientsView({
     });
   };
 
+  const avatarGradients = [
+    "from-sky-500 to-teal-500 text-white shadow-sky-500/20",
+    "from-indigo-500 to-purple-500 text-white shadow-indigo-500/20",
+    "from-emerald-500 to-teal-600 text-white shadow-emerald-500/20",
+    "from-cyan-500 to-blue-600 text-white shadow-cyan-500/20",
+    "from-rose-500 to-amber-500 text-white shadow-rose-500/20",
+  ];
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-[family-name:var(--font-display)] text-[26px] text-[var(--color-ink)]">
-            Patients
+          <h1 className="font-[family-name:var(--font-display)] text-[28px] text-slate-900">
+            Patients Directory
           </h1>
-          <p className="mt-1 text-[14px] text-[var(--color-ink-faint)]">
-            {patients.length} patient{patients.length === 1 ? "" : "s"} on file
+          <p className="mt-1 text-[14px] text-slate-500">
+            {patients.length} patient record{patients.length === 1 ? "" : "s"} stored on database
           </p>
         </div>
-        <Button onClick={() => setModalOpen(true)}>Add patient</Button>
+        <Button
+          onClick={() => setModalOpen(true)}
+          className="bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white shadow-md shadow-sky-600/20"
+        >
+          + Add new patient
+        </Button>
       </div>
 
-      <div className="relative max-w-xs">
+      <div className="relative max-w-sm">
         <input
           value={query}
           onChange={(event) => handleSearchChange(event.target.value)}
-          placeholder="Search by name (e.g. John, Smth)..."
-          className="w-full h-10 rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-3 text-[14px] text-[var(--color-ink)] outline-none focus:border-[var(--color-brand)]"
+          placeholder="Search by name..."
+          className="w-full h-11 rounded-xl border border-slate-200 bg-white px-4 text-[14px] text-slate-800 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 shadow-sm transition-all"
         />
         {isPending && (
-          <div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-brand)] border-t-transparent" />
+          <div className="absolute right-3.5 top-3.5 h-4 w-4 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
         )}
       </div>
 
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-200/50 overflow-hidden">
         {patients.length === 0 ? (
           <EmptyState
             title={query ? "No matching patients" : "No patients yet"}
@@ -80,50 +93,56 @@ export function PatientsView({
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[var(--color-border)] text-[12px] text-[var(--color-ink-faint)]">
-                <th className="px-5 py-3 font-medium">Patient</th>
-                <th className="px-5 py-3 font-medium">Last treatment</th>
-                <th className="px-5 py-3 font-medium text-right">Status</th>
+              <tr className="border-b border-slate-100 bg-slate-50/80 text-[12.5px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3.5">Patient Name</th>
+                <th className="px-6 py-3.5">Last Care Visit</th>
+                <th className="px-6 py-3.5 text-right">Active Status</th>
               </tr>
             </thead>
-            <tbody>
-              {patients.map((patient) => (
-                <tr
-                  key={patient.id}
-                  className="border-b border-[var(--color-border)] last:border-0 hover:bg-[var(--color-surface-sunken)]"
-                >
-                  <td className="px-5 py-3.5">
-                    <Link href={`/patients/${patient.id}`} className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-[var(--color-brand-soft)] text-[var(--color-brand-ink)] grid place-items-center text-[11px] font-medium">
-                        {initials(patient.firstName, patient.lastName)}
-                      </div>
-                      <div>
-                        <p className="text-[14px] font-medium text-[var(--color-ink)]">
-                          {patient.firstName} {patient.lastName}
-                        </p>
-                        <p className="text-[12px] text-[var(--color-ink-faint)]">
-                          {patient.birthDate ? formatDate(patient.birthDate) : "Birth date not recorded"}
-                        </p>
-                      </div>
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <Link href={`/patients/${patient.id}`} className="text-[13.5px] text-[var(--color-ink)]">
-                      {patient.lastTreatmentDate ? formatDate(patient.lastTreatmentDate) : "No treatments yet"}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    {patient.hasActiveTreatment ? (
-                      <ActiveBadge label="Active" />
-                    ) : (
-                      <span className="text-[12px] text-[var(--color-ink-faint)]">Inactive</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-slate-100">
+              {patients.map((patient, index) => {
+                const gradientClass = avatarGradients[index % avatarGradients.length];
+                return (
+                  <tr
+                    key={patient.id}
+                    className="hover:bg-slate-50/90 transition-colors group"
+                  >
+                    <td className="px-6 py-4">
+                      <Link href={`/patients/${patient.id}`} className="flex items-center gap-3.5">
+                        <div
+                          className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr ${gradientClass} grid place-items-center text-[13px] font-bold shadow-md`}
+                        >
+                          {initials(patient.firstName, patient.lastName)}
+                        </div>
+                        <div>
+                          <p className="text-[14.5px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors">
+                            {patient.firstName} {patient.lastName}
+                          </p>
+                          <p className="text-[12px] text-slate-400">
+                            {patient.birthDate ? formatDate(patient.birthDate) : "Birth date not recorded"}
+                          </p>
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link href={`/patients/${patient.id}`} className="text-[13.5px] text-slate-700 font-medium">
+                        {patient.lastTreatmentDate ? formatDate(patient.lastTreatmentDate) : "No treatments yet"}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {patient.hasActiveTreatment ? (
+                        <ActiveBadge label="Active Case" />
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[11px] font-medium border border-slate-200">
+                          Inactive
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-
         )}
       </div>
 
@@ -131,4 +150,3 @@ export function PatientsView({
     </div>
   );
 }
-

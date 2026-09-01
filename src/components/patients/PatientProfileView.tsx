@@ -9,7 +9,7 @@ import { ActiveBadge } from "@/components/ui/Badge";
 import { TreatmentTimeline } from "@/components/treatments/TreatmentTimeline";
 import { TreatmentForm } from "@/components/treatments/TreatmentForm";
 import { EditPatientModal } from "@/components/patients/EditPatientModal";
-import { age, formatDate, initials } from "@/lib/format";
+import { age, formatCurrency, formatDate, initials } from "@/lib/format";
 
 export function PatientProfileView({
   patient,
@@ -21,61 +21,101 @@ export function PatientProfileView({
   const [formOpen, setFormOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
+  const totalBilled = treatments.reduce((acc, t) => acc + t.totalPayment, 0);
+  const totalPaid = treatments.reduce((acc, t) => acc + t.totalPayed, 0);
+  const remainingDue = totalBilled - totalPaid;
+
   const birthDateText = patient.birthDate
-    ? `${age(patient.birthDate)} yrs · ${formatDate(patient.birthDate)}`
+    ? `${age(patient.birthDate)} yrs · Born ${formatDate(patient.birthDate)}`
     : "Birth date not recorded";
 
   return (
     <div className="space-y-6">
-      <Link href="/patients" className="inline-flex text-[13px] text-[var(--color-ink-faint)] hover:text-[var(--color-ink)]">
-        ← Patients
+      <Link href="/patients" className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-slate-500 hover:text-sky-600 transition-colors">
+        ← Back to Patients Directory
       </Link>
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-full bg-[var(--color-brand-soft)] text-[var(--color-brand-ink)] grid place-items-center text-[18px] font-medium">
-            {initials(patient.firstName, patient.lastName)}
-          </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="font-[family-name:var(--font-display)] text-[24px] text-[var(--color-ink)]">
-                {patient.firstName} {patient.lastName}
-              </h1>
-              {patient.hasActiveTreatment && <ActiveBadge label="Active Patient" />}
+      {/* Patient Hero Card */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-md shadow-slate-200/50 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 shrink-0 rounded-full bg-gradient-to-tr from-sky-500 via-teal-500 to-emerald-400 text-white grid place-items-center text-[22px] font-bold shadow-lg shadow-sky-500/20">
+              {initials(patient.firstName, patient.lastName)}
             </div>
-            <p className="mt-1 text-[13.5px] text-[var(--color-ink-faint)]">{birthDateText}</p>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="font-[family-name:var(--font-display)] text-[26px] sm:text-[30px] text-slate-900 leading-tight">
+                  {patient.firstName} {patient.lastName}
+                </h1>
+                {patient.hasActiveTreatment ? (
+                  <ActiveBadge label="Active Case" />
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[11px] font-semibold border border-slate-200">
+                    Inactive
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-[14px] text-slate-500">{birthDateText}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="secondary"
+              onClick={() => setEditOpen(true)}
+              className="bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-sm"
+            >
+              Edit profile
+            </Button>
+            <Button
+              onClick={() => setFormOpen(true)}
+              className="bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white shadow-md shadow-sky-600/20"
+            >
+              + Add treatment
+            </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setEditOpen(true)}>
-            Edit profile
-          </Button>
-          <Button onClick={() => setFormOpen(true)}>Add treatment</Button>
+        {/* Patient Financial & Procedure Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100">
+          <StatChip label="Total Procedures" value={String(treatments.length)} />
+          <StatChip label="Total Billed" value={formatCurrency(totalBilled)} />
+          <StatChip label="Total Paid" value={formatCurrency(totalPaid)} color="text-emerald-600" />
+          <StatChip
+            label="Remaining Due"
+            value={formatCurrency(remainingDue)}
+            color={remainingDue > 0 ? "text-amber-600" : "text-slate-700"}
+          />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <Card>
+      {/* Detail Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Col: Patient Metadata */}
+        <Card className="shadow-md shadow-slate-200/50 border-slate-200/80 h-fit">
           <CardHeader
-            title="Patient information"
+            title="Patient Information"
             action={
               <button
                 onClick={() => setEditOpen(true)}
-                className="text-[12.5px] text-[var(--color-brand)] font-medium hover:underline"
+                className="text-[12.5px] text-sky-600 font-semibold hover:underline"
               >
                 Edit
               </button>
             }
           />
-          <dl className="px-5 pb-5 space-y-3">
+          <dl className="px-5 pb-5 space-y-4">
             <Row label="Date of birth" value={patient.birthDate ? formatDate(patient.birthDate) : "—"} />
-            <Row label="Notes" value={patient.notes || "No notes on file."} />
+            <Row label="Medical & General Notes" value={patient.notes || "No notes recorded on file."} />
           </dl>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader title="Treatment history" subtitle={`${treatments.length} recorded`} />
+        {/* Right Col: Treatment History Timeline */}
+        <Card className="lg:col-span-2 shadow-md shadow-slate-200/50 border-slate-200/80">
+          <CardHeader
+            title="Treatment History"
+            subtitle={`${treatments.length} logged procedure${treatments.length === 1 ? "" : "s"}`}
+          />
           <div className="px-5 pb-5">
             <TreatmentTimeline treatments={treatments} />
           </div>
@@ -88,11 +128,22 @@ export function PatientProfileView({
   );
 }
 
+function StatChip({ label, value, color = "text-slate-800" }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="rounded-xl bg-slate-50 p-3 border border-slate-100">
+      <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
+      <p className={`text-[17px] font-bold mt-0.5 ${color}`}>{value}</p>
+    </div>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[12px] text-[var(--color-ink-faint)]">{label}</dt>
-      <dd className="mt-0.5 whitespace-pre-wrap text-[14px] text-[var(--color-ink)]">{value}</dd>
+      <dt className="text-[12px] font-medium text-slate-400 uppercase tracking-wider">{label}</dt>
+      <dd className="mt-1 whitespace-pre-wrap text-[14px] font-medium text-slate-800 bg-slate-50/70 p-3 rounded-xl border border-slate-100">
+        {value}
+      </dd>
     </div>
   );
 }

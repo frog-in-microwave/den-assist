@@ -17,6 +17,7 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
   const [payment, setPayment] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
   const [form, setForm] = useState({
     type: treatment.type,
     diagnosis: treatment.diagnosis,
@@ -28,7 +29,12 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
 
   const update = (key: keyof typeof form, value: any) =>
     setForm((current) => ({ ...current, [key]: value }));
+
   const remaining = treatment.totalPayment - treatment.totalPayed;
+  const percentPaid = Math.min(
+    100,
+    Math.round((treatment.totalPayed / treatment.totalPayment) * 100)
+  );
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -64,7 +70,6 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
     }
   }
 
-
   async function addPayment(event: FormEvent) {
     event.preventDefault();
     setSaving(true);
@@ -78,43 +83,70 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
 
   return (
     <div className="max-w-3xl space-y-6">
-      <Link href="/treatments" className="inline-flex text-[13px] text-[var(--color-ink-faint)] hover:text-[var(--color-ink)]">
-        ← Treatments
+      <Link href="/treatments" className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-slate-500 hover:text-sky-600 transition-colors">
+        ← Back to Treatments Directory
       </Link>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="font-[family-name:var(--font-display)] text-[26px] text-[var(--color-ink)]">
-              {treatment.type}
-            </h1>
-            <ActiveBadge label="Active" active={treatment.isActive} />
+      {/* Hero Header Card */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-md shadow-slate-200/50 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-500 via-teal-500 to-emerald-400 text-white grid place-items-center shadow-lg shadow-sky-500/20 p-3">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+                <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" fill="white" fillOpacity="0.25" />
+                <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" />
+              </svg>
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="font-[family-name:var(--font-display)] text-[26px] sm:text-[28px] text-slate-900 leading-tight">
+                  {treatment.type}
+                </h1>
+                <ActiveBadge label={treatment.isActive ? "Active Case" : "Completed Care"} active={treatment.isActive} />
+              </div>
+              <p className="mt-1 text-[14px] text-slate-500">
+                Patient:{" "}
+                <Link
+                  href={`/patients/${treatment.patient.id}`}
+                  className="font-semibold text-sky-600 hover:underline"
+                >
+                  {treatment.patient.firstName} {treatment.patient.lastName}
+                </Link>{" "}
+                · Date: {formatDate(treatment.date)}
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-[14px] text-[var(--color-ink-faint)]">
-            {treatment.patient.firstName} {treatment.patient.lastName} · {formatDate(treatment.date)}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={toggleActive} disabled={saving}>
-            {treatment.isActive ? "Mark as Completed" : "Mark as Active"}
-          </Button>
-          <Button variant="secondary" onClick={() => setEditing((value) => !value)}>
-            {editing ? "Cancel editing" : "Edit treatment"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={toggleActive}
+              disabled={saving}
+              className="bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
+            >
+              {treatment.isActive ? "Mark as Completed" : "Mark as Active"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setEditing((value) => !value)}
+              className="bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
+            >
+              {editing ? "Cancel editing" : "Edit treatment"}
+            </Button>
+          </div>
         </div>
       </div>
 
       {error && (
-        <p className="rounded-lg bg-[var(--color-danger-soft)] px-3 py-2 text-[13px] text-[var(--color-danger)]">
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-[13.5px] text-rose-700 flex items-center gap-2 shadow-sm">
           {error}
-        </p>
+        </div>
       )}
 
       {editing ? (
-        <Card>
-          <CardHeader title="Edit treatment" />
-          <form onSubmit={save} className="px-5 pb-5 space-y-4">
+        <Card className="shadow-md shadow-slate-200/50 border-slate-200/80">
+          <CardHeader title="Edit Treatment Procedure" />
+          <form onSubmit={save} className="px-6 pb-6 space-y-4">
             <Field label="Treatment type" htmlFor="type">
               <TextInput id="type" required value={form.type} onChange={(event) => update("type", event.target.value)} />
             </Field>
@@ -136,51 +168,82 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(event) => update("isActive", event.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-[var(--color-brand)] focus:ring-[var(--color-brand)]"
+                className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
               />
-              <label htmlFor="isActive" className="text-[14px] text-[var(--color-ink)]">
+              <label htmlFor="isActive" className="text-[14px] text-slate-800 font-medium">
                 Active treatment case
               </label>
             </div>
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving} className="bg-sky-600 hover:bg-sky-700 text-white">
                 {saving ? "Saving…" : "Save changes"}
               </Button>
             </div>
           </form>
         </Card>
       ) : (
-        <Card>
-          <CardHeader title="Treatment details" />
-          <dl className="px-5 pb-5 space-y-3">
-            <Detail label="Status" value={treatment.isActive ? "Active Case" : "Completed Care"} />
-            <Detail label="Diagnosis" value={treatment.diagnosis} />
-            <Detail label="Notes" value={treatment.notes || "—"} />
+        <Card className="shadow-md shadow-slate-200/50 border-slate-200/80">
+          <CardHeader title="Treatment Details" />
+          <dl className="px-6 pb-6 space-y-4">
+            <Detail label="Clinical Diagnosis" value={treatment.diagnosis} />
+            <Detail label="Procedure Notes" value={treatment.notes || "No notes recorded on file."} />
           </dl>
         </Card>
       )}
 
-      <Card>
-        <CardHeader title="Payment" subtitle="Recorded only for this treatment" />
-        <div className="px-5 pb-5 space-y-4">
+      {/* Payment Information Card */}
+      <Card className="shadow-md shadow-slate-200/50 border-slate-200/80">
+        <CardHeader title="Payment & Billing" subtitle="Financial record for this procedure" />
+        <div className="px-6 pb-6 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Amount label="Total amount" value={formatCurrency(treatment.totalPayment)} />
-            <Amount label="Paid" value={formatCurrency(treatment.totalPayed)} />
-            <Amount label="Remaining" value={formatCurrency(remaining)} />
+            <AmountCard label="Total Amount" value={formatCurrency(treatment.totalPayment)} />
+            <AmountCard label="Amount Paid" value={formatCurrency(treatment.totalPayed)} color="text-emerald-600" />
+            <AmountCard label="Remaining Balance" value={formatCurrency(remaining)} color={remaining > 0 ? "text-amber-600" : "text-slate-800"} />
           </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-1.5 pt-2">
+            <div className="flex items-center justify-between text-[12px] font-medium text-slate-500">
+              <span>Progress: {percentPaid}% paid</span>
+              <span>{remaining > 0 ? `${formatCurrency(remaining)} remaining` : "Paid in full"}</span>
+            </div>
+            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  percentPaid === 100 ? "bg-emerald-500" : "bg-sky-500"
+                }`}
+                style={{ width: `${percentPaid}%` }}
+              />
+            </div>
+          </div>
+
           {remaining > 0 ? (
-            <form onSubmit={addPayment} className="flex flex-wrap gap-2 items-end">
-              <div className="w-full sm:w-48">
-                <Field label="Add payment" htmlFor="payment">
-                  <TextInput id="payment" type="number" min="1" max={remaining} required value={payment} onChange={(event) => setPayment(event.target.value)} />
+            <form onSubmit={addPayment} className="flex flex-wrap gap-3 items-end pt-3 border-t border-slate-100">
+              <div className="w-full sm:w-56">
+                <Field label="Record payment" htmlFor="payment">
+                  <TextInput
+                    id="payment"
+                    type="number"
+                    min="1"
+                    max={remaining}
+                    required
+                    placeholder="Enter amount..."
+                    value={payment}
+                    onChange={(event) => setPayment(event.target.value)}
+                  />
                 </Field>
               </div>
-              <Button type="submit" disabled={saving}>
-                {saving ? "Saving…" : "Record payment"}
+              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20">
+                {saving ? "Saving…" : "Record payment →"}
               </Button>
             </form>
           ) : (
-            <p className="text-[14px] text-[var(--color-ink-muted)]">This treatment has been paid in full.</p>
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[13.5px] font-semibold text-emerald-800 flex items-center gap-2">
+              <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              This treatment procedure has been paid in full.
+            </div>
           )}
         </div>
       </Card>
@@ -188,5 +251,22 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) { return <div><dt className="text-[12px] text-[var(--color-ink-faint)]">{label}</dt><dd className="mt-0.5 whitespace-pre-wrap text-[14px] text-[var(--color-ink)]">{value}</dd></div>; }
-function Amount({ label, value }: { label: string; value: string }) { return <div className="rounded-lg bg-[var(--color-surface-sunken)] px-3 py-2"><p className="text-[12px] text-[var(--color-ink-faint)]">{label}</p><p className="mt-1 font-[family-name:var(--font-mono)] text-[15px] text-[var(--color-ink)]">{value}</p></div>; }
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[12px] font-medium text-slate-400 uppercase tracking-wider">{label}</dt>
+      <dd className="mt-1 whitespace-pre-wrap text-[14px] font-medium text-slate-800 bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function AmountCard({ label, value, color = "text-slate-800" }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
+      <p className="text-[12px] font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
+      <p className={`mt-1 font-[family-name:var(--font-mono)] text-[18px] font-bold ${color}`}>{value}</p>
+    </div>
+  );
+}

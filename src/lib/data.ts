@@ -147,13 +147,64 @@ export async function getTreatmentsForPatient(patientId: number): Promise<Treatm
   return treatments.map(toTreatmentRecord);
 }
 
-export async function getAllTreatments(): Promise<TreatmentWithPatient[]> {
+export async function getAllTreatments(query?: string): Promise<TreatmentWithPatient[]> {
+  const q = query?.trim();
+
+  if (!q) {
+    const treatments = await prisma.treatment.findMany({
+      include: { patient: { select: { id: true, firstName: true, lastName: true } } },
+      orderBy: { date: "desc" },
+    });
+    return treatments.map((treatment) => ({ ...toTreatmentRecord(treatment), patient: treatment.patient }));
+  }
+
+  // Database-level fuzzy search using PostgreSQL pg_trgm similarity and ILIKE
+  const matchedTreatments = await prisma.$queryRaw<{ id: number }[]>`
+    SELECT t.id
+    FROM "Treatment" t
+    JOIN "Patient" p ON t."patientId" = p.id
+    WHERE t."type" ILIKE ${'%' + q + '%'}
+       OR t."diagnosis" ILIKE ${'%' + q + '%'}
+       OR (p."firstName" || ' ' || p."lastName") ILIKE ${'%' + q + '%'}
+       OR similarity(t."type", ${q}) > 0.15
+       OR similarity(t."diagnosis", ${q}) > 0.15
+       OR similarity(p."firstName" || ' ' || p."lastName", ${q}) > 0.15
+       OR similarity(p."firstName", ${q}) > 0.15
+       OR similarity(p."lastName", ${q}) > 0.15
+    ORDER BY
+      CASE 
+        WHEN t."type" ILIKE ${q + '%'} THEN 1
+        WHEN (p."firstName" || ' ' || p."lastName") ILIKE ${q + '%'} THEN 2
+        ELSE 3
+      END,
+      GREATEST(
+        similarity(t."type", ${q}),
+        similarity(t."diagnosis", ${q}),
+        similarity(p."firstName" || ' ' || p."lastName", ${q})
+      ) DESC,
+      t.date DESC;
+  `;
+
+  if (matchedTreatments.length === 0) return [];
+
+  const treatmentIds = matchedTreatments.map((t) => t.id);
+
   const treatments = await prisma.treatment.findMany({
+    where: { id: { in: treatmentIds } },
     include: { patient: { select: { id: true, firstName: true, lastName: true } } },
-    orderBy: { date: "desc" },
   });
-  return treatments.map((treatment) => ({ ...toTreatmentRecord(treatment), patient: treatment.patient }));
+
+  const treatmentMap = new Map(treatments.map((t) => [t.id, t]));
+  const orderedTreatments = treatmentIds
+    .map((id) => treatmentMap.get(id))
+    .filter((t): t is NonNullable<typeof t> => t !== undefined);
+
+  return orderedTreatments.map((treatment) => ({
+    ...toTreatmentRecord(treatment),
+    patient: treatment.patient,
+  }));
 }
+
 
 export async function getTreatment(id: number): Promise<TreatmentWithPatient | null> {
   const treatment = await prisma.treatment.findUnique({
