@@ -94,9 +94,9 @@ export function PatientsView({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/80 text-[12.5px] font-semibold text-slate-500 uppercase tracking-wider">
-                <th className="px-6 py-3.5">Patient Name</th>
-                <th className="px-6 py-3.5">Last Care Visit</th>
-                <th className="px-6 py-3.5 text-right">Active Status</th>
+                <th className="px-4 sm:px-6 py-3.5">Patient Name</th>
+                <th className="hidden sm:table-cell px-6 py-3.5">Last Care Visit</th>
+                <th className="hidden sm:table-cell px-6 py-3.5 text-right">Active Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -107,29 +107,33 @@ export function PatientsView({
                     key={patient.id}
                     className="hover:bg-slate-50/90 transition-colors group"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <Link href={`/patients/${patient.id}`} className="flex items-center gap-3.5">
                         <div
-                          className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr ${gradientClass} grid place-items-center text-[13px] font-bold shadow-md`}
+                          className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr ${gradientClass} grid place-items-center text-[13px] font-bold shadow-md relative`}
                         >
                           {initials(patient.firstName, patient.lastName)}
+                          {/* Active dot */}
+                          {patient.hasActiveTreatment && (
+                            <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+                          )}
                         </div>
                         <div>
-                          <p className="text-[14.5px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors">
+                          <p className="text-[14px] sm:text-[14.5px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors">
                             {patient.firstName} {patient.lastName}
                           </p>
-                          <p className="text-[12px] text-slate-400">
+                          <p className="text-[11.5px] sm:text-[12px] text-slate-400">
                             {patient.birthDate ? formatDate(patient.birthDate) : "Birth date not recorded"}
                           </p>
                         </div>
                       </Link>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="hidden sm:table-cell px-6 py-4">
                       <Link href={`/patients/${patient.id}`} className="text-[13.5px] text-slate-700 font-medium">
                         {patient.lastTreatmentDate ? formatDate(patient.lastTreatmentDate) : "No treatments yet"}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="hidden sm:table-cell px-6 py-4 text-right">
                       {patient.hasActiveTreatment ? (
                         <ActiveBadge label="Active Case" />
                       ) : (

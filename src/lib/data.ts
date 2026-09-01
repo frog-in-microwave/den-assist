@@ -247,9 +247,7 @@ export async function getDashboardSummary(query?: string) {
       JOIN "Treatment" t ON t."patientId" = p.id
       WHERE t."isActive" = true
         AND (
-             p."firstName" ILIKE ${'%' + q + '%'}
-          OR p."lastName" ILIKE ${'%' + q + '%'}
-          OR (p."firstName" || ' ' || p."lastName") ILIKE ${'%' + q + '%'}
+          (p."firstName" || ' ' || p."lastName") ILIKE ${'%' + q + '%'}
           OR similarity(p."firstName" || ' ' || p."lastName", ${q}) > 0.15
           OR similarity(p."firstName", ${q}) > 0.15
           OR similarity(p."lastName", ${q}) > 0.15

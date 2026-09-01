@@ -77,7 +77,7 @@ export function TreatmentsView({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
             <div className="rounded-xl bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 text-center">
               <p className="text-[11px] uppercase tracking-wider text-sky-100 font-medium">Logged</p>
               <p className="text-[20px] font-bold text-white leading-tight mt-0.5">{treatments.length}</p>
@@ -106,7 +106,7 @@ export function TreatmentsView({
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+        <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
           <FilterPill
             active={filter === "all"}
             onClick={() => setFilter("all")}
@@ -152,11 +152,11 @@ export function TreatmentsView({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/80 text-[12.5px] font-semibold text-slate-500 uppercase tracking-wider">
-                  <th className="px-6 py-3.5">Patient</th>
-                  <th className="px-6 py-3.5">Procedure & Diagnosis</th>
-                  <th className="px-6 py-3.5">Date</th>
-                  <th className="px-6 py-3.5">Payment Progress</th>
-                  <th className="px-6 py-3.5 text-right">Status</th>
+                  <th className="px-4 sm:px-6 py-3.5">Patient</th>
+                  <th className="px-4 sm:px-6 py-3.5">Procedure & Diagnosis</th>
+                  <th className="hidden sm:table-cell px-6 py-3.5">Date</th>
+                  <th className="hidden sm:table-cell px-6 py-3.5">Payment Progress</th>
+                  <th className="hidden sm:table-cell px-6 py-3.5 text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -170,44 +170,51 @@ export function TreatmentsView({
 
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/90 transition-colors group">
-                      <td className="px-6 py-4">
-                        <Link href={`/patients/${t.patientId}`} className="flex items-center gap-3.5">
+                      <td className="px-4 sm:px-6 py-4">
+                        <Link href={`/treatments/${t.id}`} className="flex items-center gap-3.5">
                           <div
-                            className={`h-9 w-9 shrink-0 rounded-full bg-gradient-to-tr ${gradientClass} grid place-items-center text-[12px] font-bold shadow-sm`}
+                            className={`relative h-9 w-9 shrink-0 rounded-full bg-gradient-to-tr ${gradientClass} grid place-items-center text-[12px] font-bold shadow-sm`}
                           >
                             {initials(t.patient.firstName, t.patient.lastName)}
+                            {t.isActive && (
+                              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+                            )}
                           </div>
                           <div>
-                            <span className="text-[14.5px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors">
+                            <span className="text-[13px] sm:text-[14.5px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors">
                               {t.patient.firstName} {t.patient.lastName}
                             </span>
                           </div>
                         </Link>
                       </td>
 
-                      <td className="px-6 py-4">
-                        <Link href={`/treatments/${t.id}`} className="block">
+                      <td className="px-4 sm:px-6 py-4">
+                        <Link href={`/treatments/${t.id}`} className="block relative">
                           <div className="flex items-center gap-2">
                             <span className="p-1 rounded-md bg-sky-50 text-sky-600">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" />
                               </svg>
                             </span>
-                            <p className="text-[14.5px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors">
+                            <p className="text-[13.5px] sm:text-[14.5px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors flex items-center gap-2">
                               {t.type}
+                              {/* Active dot */}
+                              {t.isActive && (
+                                <span className="hidden sm:inline-block w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />
+                              )}
                             </p>
                           </div>
-                          <p className="text-[12.5px] text-slate-500 mt-0.5 truncate max-w-xs">
+                          <p className="hidden sm:block text-[11.5px] sm:text-[12.5px] text-slate-500 mt-0.5 truncate max-w-xs">
                             {t.diagnosis}
                           </p>
                         </Link>
                       </td>
 
-                      <td className="px-6 py-4 text-[13.5px] text-slate-600 font-medium">
+                      <td className="hidden sm:table-cell px-6 py-4 text-[13.5px] text-slate-600 font-medium">
                         {formatDate(t.date)}
                       </td>
 
-                      <td className="px-6 py-4 min-w-[180px]">
+                      <td className="hidden sm:table-cell px-6 py-4 min-w-[180px]">
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-[12px]">
                             <span className="text-slate-600 font-medium">
@@ -234,7 +241,7 @@ export function TreatmentsView({
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 text-right">
+                      <td className="hidden sm:table-cell px-6 py-4 text-right">
                         <ActiveBadge label={t.isActive ? "Active Case" : "Completed"} active={t.isActive} />
                       </td>
                     </tr>

@@ -83,55 +83,65 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
 
   return (
     <div className="max-w-3xl space-y-6">
-      <Link href="/treatments" className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-slate-500 hover:text-sky-600 transition-colors">
-        ← Back to Treatments Directory
+      <Link 
+        href="/treatments" 
+        className="inline-flex items-center gap-2 text-[14px] font-semibold text-slate-600 bg-white hover:bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition-all hover:text-sky-600 hover:border-sky-200 w-fit"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Back to Treatments Directory
       </Link>
 
       {/* Hero Header Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-md shadow-slate-200/50 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-500 via-teal-500 to-emerald-400 text-white grid place-items-center shadow-lg shadow-sky-500/20 p-3">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-7 shadow-md shadow-slate-200/50 space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 shrink-0 rounded-2xl bg-gradient-to-tr from-sky-500 via-teal-500 to-emerald-400 text-white grid place-items-center shadow-lg shadow-sky-500/20 p-2.5 sm:p-3">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
                 <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" fill="white" fillOpacity="0.25" />
                 <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" />
               </svg>
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <h1 className="font-[family-name:var(--font-display)] text-[26px] sm:text-[28px] text-slate-900 leading-tight">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <h1 className="font-[family-name:var(--font-display)] text-[22px] sm:text-[28px] text-slate-900 leading-tight">
                   {treatment.type}
                 </h1>
-                <ActiveBadge label={treatment.isActive ? "Active Case" : "Completed Care"} active={treatment.isActive} />
+                <div className="hidden sm:block">
+                  <ActiveBadge label={treatment.isActive ? "Active Case" : "Completed Care"} active={treatment.isActive} />
+                </div>
               </div>
-              <p className="mt-1 text-[14px] text-slate-500">
+              <p className="mt-0.5 sm:mt-1 text-[13px] sm:text-[14px] text-slate-500">
                 Patient:{" "}
                 <Link
                   href={`/patients/${treatment.patient.id}`}
-                  className="font-semibold text-sky-600 hover:underline"
+                  className="font-semibold text-sky-600 hover:underline inline-flex items-center gap-1"
                 >
                   {treatment.patient.firstName} {treatment.patient.lastName}
+                  {treatment.isActive && <span className="sm:hidden w-2 h-2 bg-emerald-500 rounded-full inline-block" />}
                 </Link>{" "}
-                · Date: {formatDate(treatment.date)}
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline">·</span> Date: {formatDate(treatment.date)}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
             <Button
               variant="secondary"
               onClick={toggleActive}
               disabled={saving}
-              className="bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
+              className="flex-1 sm:flex-none bg-white hover:bg-slate-50 text-slate-700 border-slate-200 px-3 sm:px-4"
             >
-              {treatment.isActive ? "Mark as Completed" : "Mark as Active"}
+              {treatment.isActive ? "Mark Completed" : "Mark Active"}
             </Button>
             <Button
               variant="secondary"
               onClick={() => setEditing((value) => !value)}
-              className="bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
+              className="flex-1 sm:flex-none bg-white hover:bg-slate-50 text-slate-700 border-slate-200 px-3 sm:px-4"
             >
-              {editing ? "Cancel editing" : "Edit treatment"}
+              {editing ? "Cancel" : "Edit"}
             </Button>
           </div>
         </div>

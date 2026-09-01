@@ -83,7 +83,7 @@ export function DashboardView({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
             <div className="rounded-xl bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 text-center">
               <p className="text-[11px] uppercase tracking-wider text-sky-100 font-medium">Active Cases</p>
               <p className="text-[22px] font-bold text-white leading-tight mt-0.5">{summary.activePatients.length}</p>
@@ -144,19 +144,22 @@ export function DashboardView({
                         isSelected
                           ? "bg-sky-50/70 border-l-4 border-l-sky-600 shadow-sm"
                           : "hover:bg-slate-50/80"
-                      }`}
+                      } ${index >= 5 ? "hidden sm:flex" : ""}`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
                         <div
-                          className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr ${gradientClass} grid place-items-center text-[13px] font-bold shadow-md`}
+                          className={`relative h-10 w-10 shrink-0 rounded-full bg-gradient-to-tr ${gradientClass} grid place-items-center text-[13px] font-bold shadow-md`}
                         >
                           {initials(patient.firstName, patient.lastName)}
+                          {patient.hasActiveTreatment && (
+                            <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+                          )}
                         </div>
                         <div className="min-w-0">
                           <p className="text-[15px] font-semibold text-slate-800 truncate group-hover:text-sky-600 transition-colors">
                             {patient.firstName} {patient.lastName}
                           </p>
-                          <p className="text-[12px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                          <p className="hidden sm:flex text-[12px] text-slate-500 items-center gap-1.5 mt-0.5">
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-500" />
                             {patient.activeTreatments.length} active treatment
                             {patient.activeTreatments.length === 1 ? "" : "s"}
@@ -164,7 +167,7 @@ export function DashboardView({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
+                      <div className="hidden sm:flex items-center gap-3 shrink-0">
                         <ActiveBadge label="Active Case" />
 
                         <Link
@@ -200,9 +203,16 @@ export function DashboardView({
                 action={
                   <Link
                     href={`/patients/${selectedPatient.id}`}
-                    className="text-[13px] text-sky-600 font-semibold hover:underline flex items-center gap-1"
+                    className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-white bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all"
                   >
-                    Go to profile →
+                    View Patient Profile
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M7.21 14.77a.75.75 0 01.02-1.06L11.16 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </Link>
                 }
               />
@@ -234,15 +244,18 @@ export function DashboardView({
                                   <path d="M12 2C8.5 2 6 4.5 6 8c0 3 1.5 6 2 9.5.5 3.5 1.5 4.5 3 4.5s1.5-2 1-4.5c-.5-2.5 0-3.5 0-3.5s.5 1 0 3.5c-.5 2.5.5 4.5 1 4.5s2.5-1 3-4.5c.5-3.5 2-6.5 2-9.5 0-3.5-2.5-6-6-6z" />
                                 </svg>
                               </span>
-                              <h4 className="text-[15px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors">
+                              <h4 className="text-[15px] font-semibold text-slate-800 group-hover:text-sky-600 transition-colors flex items-center gap-2">
                                 {treatment.type}
+                                <span className="w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />
                               </h4>
                             </div>
                             <p className="text-[13px] text-slate-500 mt-1">
                               {treatment.diagnosis}
                             </p>
                           </div>
-                          <ActiveBadge label="Active" />
+                          <div className="hidden sm:block">
+                            <ActiveBadge label="Active" />
+                          </div>
                         </div>
 
                         {treatment.notes && (

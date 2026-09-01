@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { logoutAction } from "@/lib/actions";
 
 const NAV_ITEMS: { href: string; label: string; icon: ReactNode }[] = [
@@ -47,6 +47,24 @@ function isActive(current: string, href: string) {
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
+
+  // Lock background body scrolling when mobile drawer is open
+  useEffect(() => {
+    if (drawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [drawerOpen]);
 
   if (pathname === "/login") return null;
 
@@ -58,12 +76,14 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop: persistent left rail */}
-      <aside className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:flex-col border-r border-slate-200 bg-white shadow-sm">
+      {/* ==================================================== */}
+      {/* DESKTOP SIDEBAR: Persistent Left Rail (lg:flex) */}
+      {/* ==================================================== */}
+      <aside className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:flex-col border-r border-slate-200 bg-white shadow-sm z-20">
         <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-100">
           <Logomark className="w-8 h-8" />
           <span className="font-[family-name:var(--font-display)] text-[20px] font-bold tracking-tight text-slate-900">
-            Den-Assist
+            Den Assist
           </span>
         </div>
 
@@ -110,34 +130,103 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Mobile / tablet: condensed top bar */}
-      <header className="lg:hidden sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3 px-4 h-14">
-          <Logomark className="w-7 h-7" />
-          <span className="font-[family-name:var(--font-display)] text-[18px] font-bold text-slate-900">
-            Den Assist
-          </span>
+      {/* ==================================================== */}
+      {/* MOBILE TOP BAR (lg:hidden) */}
+      {/* ==================================================== */}
+      <header className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 h-14">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open Navigation Drawer"
+              className="flex items-center justify-center p-2 rounded-xl text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            </button>
+
+            <div className="flex items-center gap-2">
+              <Logomark className="w-7 h-7" />
+              <span className="font-[family-name:var(--font-display)] text-[18px] font-bold text-slate-900">
+                Den Assist
+              </span>
+            </div>
+          </div>
         </div>
-        <nav className="flex overflow-x-auto px-2 pb-2 gap-1 no-scrollbar">
+      </header>
+
+      {/* ==================================================== */}
+      {/* MOBILE DRAWER & BACKDROP */}
+      {/* ==================================================== */}
+      <div
+        className={`lg:hidden fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${
+          drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setDrawerOpen(false)}
+      />
+
+      <aside
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out transform ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-3">
+            <Logomark className="w-8 h-8" />
+            <div>
+              <h2 className="font-[family-name:var(--font-display)] text-[18px] font-bold text-slate-900 leading-tight">
+                Den Assist
+              </h2>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close Drawer"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const active = isActive(pathname, item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] ${
+                onClick={() => setDrawerOpen(false)}
+                className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-[15px] font-medium transition-all ${
                   active
-                    ? "bg-sky-50 text-sky-700 font-semibold border border-sky-200"
-                    : "text-slate-600 hover:bg-slate-100"
+                    ? "bg-sky-50 text-sky-700 font-semibold border border-sky-100 shadow-sm"
+                    : "text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                <span className="w-4 h-4">{item.icon}</span>
+                <span className={`w-5 h-5 shrink-0 ${active ? "text-sky-600" : "text-slate-400"}`}>
+                  {item.icon}
+                </span>
                 {item.label}
               </Link>
             );
           })}
         </nav>
-      </header>
+        
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+          <button
+            onClick={() => {
+              setDrawerOpen(false);
+              handleLogout();
+            }}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[14px] font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/60 transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      </aside>
     </>
   );
 }
