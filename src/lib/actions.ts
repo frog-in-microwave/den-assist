@@ -18,8 +18,13 @@ export async function loginAction(usernameInput: string, passwordInput: string):
       };
     }
 
-    const adminUsername = process.env.ADMIN_USERNAME || "admin";
-    const adminPassword = process.env.ADMIN_PASSWORD || "password123";
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminUsername || !adminPassword) {
+      console.error("ADMIN_USERNAME or ADMIN_PASSWORD environment variables are missing.");
+      return { ok: false, error: "Server misconfiguration. Cannot process login." };
+    }
 
     const username = usernameInput?.trim();
     const password = passwordInput?.trim();
