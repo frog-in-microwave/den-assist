@@ -134,10 +134,6 @@ function getRandomTreatmentDate() {
 async function main() {
   console.log("Starting seed process for remote database...");
 
-  // Clean existing records
-  await prisma.treatment.deleteMany();
-  await prisma.patient.deleteMany();
-
   const createdPatientsCount = 50;
 
 

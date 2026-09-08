@@ -69,7 +69,6 @@ export async function logoutAction(): Promise<ActionResult> {
 
 export async function createPatientAction(input: NewPatientInput): Promise<{ ok: true; id: number } | { ok: false; error: string }> {
   try {
-    if (!input.firstName.trim() || !input.lastName.trim()) return { ok: false, error: "First and last name are required." };
 
     const patient = await prisma.patient.create({
       data: {
@@ -91,7 +90,6 @@ export async function updatePatientAction(input: UpdatePatientInput): Promise<Ac
   try {
     const id = Number(input.id);
     if (!Number.isInteger(id) || id < 1) return { ok: false, error: "Patient not found." };
-    if (!input.firstName.trim() || !input.lastName.trim()) return { ok: false, error: "First and last name are required." };
 
     await prisma.patient.update({
       where: { id },
@@ -116,8 +114,7 @@ export async function updatePatientAction(input: UpdatePatientInput): Promise<Ac
 
 export async function createTreatmentAction(input: NewTreatmentInput): Promise<ActionResult> {
   try {
-    if (!Number.isInteger(input.patientId) || input.patientId < 1) return { ok: false, error: "Patient not found." };
-    if (!input.type.trim() || !input.diagnosis.trim()) return { ok: false, error: "Treatment type and diagnosis are required." };
+    if (!Number.isInteger(input.patientId) || input.patientId < 1) return { ok: false, error: "Invalid patient ID." };
     if (!input.date || Number.isNaN(new Date(input.date).getTime())) return { ok: false, error: "Select a valid date." };
     if (!Number.isFinite(input.totalPayment) || input.totalPayment < 0) return { ok: false, error: "Enter a valid total amount." };
     if (!Number.isFinite(input.totalPayed) || input.totalPayed < 0) return { ok: false, error: "Enter a valid amount paid." };
@@ -149,7 +146,6 @@ export async function updateTreatmentAction(input: UpdateTreatmentInput): Promis
   try {
     const id = Number(input.id);
     if (!Number.isInteger(id) || id < 1) return { ok: false, error: "Treatment not found." };
-    if (!input.type.trim() || !input.diagnosis.trim()) return { ok: false, error: "Treatment type and diagnosis are required." };
     if (!input.date || Number.isNaN(new Date(input.date).getTime())) return { ok: false, error: "Select a valid date." };
     if (!Number.isFinite(input.totalPayment) || input.totalPayment < 0) return { ok: false, error: "Enter a valid total amount." };
     const existing = await prisma.treatment.findUnique({ where: { id }, select: { patientId: true, totalPayed: true } });

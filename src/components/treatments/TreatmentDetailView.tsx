@@ -158,19 +158,19 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
           <CardHeader title="Edit Treatment Procedure" />
           <form onSubmit={save} className="px-6 pb-6 space-y-4">
             <Field label="Treatment type" htmlFor="type">
-              <TextInput id="type" required value={form.type} onChange={(event) => update("type", event.target.value)} />
+              <TextInput id="type" value={form.type} onChange={(event) => update("type", event.target.value)} />
             </Field>
             <Field label="Date" htmlFor="date">
-              <TextInput id="date" type="date" required value={form.date} onChange={(event) => update("date", event.target.value)} />
+              <TextInput id="date" type="date" value={form.date} onChange={(event) => update("date", event.target.value)} />
             </Field>
             <Field label="Diagnosis" htmlFor="diagnosis">
-              <TextInput id="diagnosis" required value={form.diagnosis} onChange={(event) => update("diagnosis", event.target.value)} />
+              <TextInput id="diagnosis" value={form.diagnosis} onChange={(event) => update("diagnosis", event.target.value)} />
             </Field>
             <Field label="Notes" htmlFor="notes">
               <TextArea id="notes" value={form.notes} onChange={(event) => update("notes", event.target.value)} />
             </Field>
             <Field label="Total amount" htmlFor="total">
-              <TextInput id="total" type="number" min={treatment.totalPayed} required value={form.totalPayment} onChange={(event) => update("totalPayment", event.target.value)} />
+              <TextInput id="total" type="number" min={treatment.totalPayed} value={form.totalPayment} onChange={(event) => update("totalPayment", event.target.value)} />
             </Field>
             <div className="flex items-center gap-2 pt-2">
               <input
@@ -236,7 +236,6 @@ export function TreatmentDetailView({ treatment }: { treatment: TreatmentWithPat
                     type="number"
                     min="1"
                     max={remaining}
-                    required
                     placeholder="Enter amount..."
                     value={payment}
                     onChange={(event) => setPayment(event.target.value)}

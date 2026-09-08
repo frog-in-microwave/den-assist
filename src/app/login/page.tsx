@@ -81,7 +81,6 @@ export default function LoginPage() {
               <TextInput
                 id="username"
                 type="text"
-                required
                 autoComplete="username"
                 autoFocus
                 placeholder="Enter your username..."
@@ -95,7 +94,6 @@ export default function LoginPage() {
                 <TextInput
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  required
                   autoComplete="current-password"
                   placeholder="Enter your password..."
                   value={password}

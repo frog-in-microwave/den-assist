@@ -76,7 +76,6 @@ export function EditPatientModal({
           <Field label="First name" htmlFor="firstName">
             <TextInput
               id="firstName"
-              required
               value={form.firstName}
               onChange={(e) => update("firstName", e.target.value)}
             />
@@ -84,7 +83,6 @@ export function EditPatientModal({
           <Field label="Last name" htmlFor="lastName">
             <TextInput
               id="lastName"
-              required
               value={form.lastName}
               onChange={(e) => update("lastName", e.target.value)}
             />
